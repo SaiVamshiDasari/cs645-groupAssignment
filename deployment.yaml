@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: survey-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: survey-webpage
+  template:
+    metadata:
+      labels:
+        app: survey-webpage
+    spec:
+      containers:
+      - name: survey-container
+        image: saivamshi1432/survey-webpage:latest
+        ports:
+        - containerPort: 80
