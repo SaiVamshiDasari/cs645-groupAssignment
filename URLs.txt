@@ -1,0 +1,8 @@
+PART-1 
+
+Homepage - https://aryan-645-p1.s3.amazonaws.com/Intro.html
+Error page- https://aryan-645-p1.s3.amazonaws.com/error.html
+
+PART-2
+
+Survey page - http://3.88.240.223/survey.html
