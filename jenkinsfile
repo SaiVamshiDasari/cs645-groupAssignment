@@ -1,0 +1,68 @@
+pipeline {
+    agent any
+
+    environment {
+        
+        TIMESTAMP = "${env.BUILD_ID}-${new Date().format('YYYYMMdd-HHmmss')}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Clone the GitHub repository
+                git branch: 'master', url: 'https://github.com/SaiVamshiDasari/cs645-saivamshi.git'
+            }
+        }
+
+        stage('Build WAR') {
+            steps {
+                // Clean and package to create the .war file
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Define the Docker image name with timestamp
+                    def imageName = "saivamshi1432/survey-webpage:${env.TIMESTAMP}"
+                    // Build Docker image
+                    sh "docker build -t ${imageName} ."
+                    // Retag the image as 'latest' for easy reference
+                    sh "docker tag ${imageName} saivamshi1432/survey-webpage"
+                }
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                script {
+                    // Log in to DockerHub and push both the timestamped and latest images
+                    docker.withRegistry('', 'dockerhub-creds') {
+                        sh "docker push saivamshi1432/survey-webpage:${env.TIMESTAMP}"
+                        sh "docker push saivamshi1432/survey-webpage:latest"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                // Update the Kubernetes deployment to use the new Docker image
+                sh """
+                    kubectl set image deployment/your-deployment-name \
+                    your-container-name=saivamshi1432/survey-webpage:${env.TIMESTAMP} --record
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Build and deployment successful!"
+        }
+        failure {
+            echo "Build failed. Check logs for details."
+        }
+    }
+}
