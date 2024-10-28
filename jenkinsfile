@@ -50,7 +50,7 @@ pipeline {
             steps {
                 // Update the Kubernetes deployment to use the new Docker image
                 sh """
-                    kubectl set image deployment/your-deployment-name \
+                    kubectl set image deployment/cs645-deployment\
                     your-container-name=saivamshi1432/survey-webpage:${env.TIMESTAMP} --record
                 """
             }
