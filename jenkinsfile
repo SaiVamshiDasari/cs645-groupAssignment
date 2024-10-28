@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         TIMESTAMP = "${env.BUILD_ID}-${new Date().format('YYYYMMdd-HHmmss')}"
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') // Ensure 'dockerhub-creds' matches your Jenkins credentials ID
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') // Update with your DockerHub credentials ID
     }
 
     stages {
@@ -14,17 +14,10 @@ pipeline {
             }
         }
 
-        stage('Build WAR') {
-            steps {
-                // Clean and package to create the .war file
-                sh 'mvn clean package'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Define the Docker image name with timestamp
+                    // Define Docker image name with timestamp
                     def imageName = "saivamshi1432/survey-webpage:${env.TIMESTAMP}"
                     // Build Docker image
                     sh "docker build -t ${imageName} ."
