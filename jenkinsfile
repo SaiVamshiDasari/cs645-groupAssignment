@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        
         TIMESTAMP = "${env.BUILD_ID}-${new Date().format('YYYYMMdd-HHmmss')}"
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') // Ensure 'dockerhub-creds' matches your Jenkins credentials ID
     }
 
     stages {
@@ -29,7 +29,7 @@ pipeline {
                     // Build Docker image
                     sh "docker build -t ${imageName} ."
                     // Retag the image as 'latest' for easy reference
-                    sh "docker tag ${imageName} saivamshi1432/survey-webpage"
+                    sh "docker tag ${imageName} saivamshi1432/survey-webpage:latest"
                 }
             }
         }
@@ -50,8 +50,8 @@ pipeline {
             steps {
                 // Update the Kubernetes deployment to use the new Docker image
                 sh """
-                    kubectl set image deployment/cs645-deployment\
-                    your-container-name=saivamshi1432/survey-webpage:${env.TIMESTAMP} --record
+                    kubectl set image deployment/cs645-deployment \
+                    cs645-container=saivamshi1432/survey-webpage:${env.TIMESTAMP} --record
                 """
             }
         }
