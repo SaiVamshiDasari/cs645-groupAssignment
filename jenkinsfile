@@ -7,6 +7,7 @@ pipeline {
         DOCKER_REGISTRY = "https://index.docker.io/v1/" // DockerHub registry URL
         KUBE_CONTEXT = "arn:aws:eks:us-east-1:717279734829:cluster/cs645-cluster"
         KUBE_NAMESPACE = "default" // e.g., default or app-specific namespace
+          KUBECONFIG = "/var/lib/jenkins/.kube/config" 
     }
 
     stages {
@@ -28,13 +29,11 @@ pipeline {
             }
         }
 
+       stages {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Set the Kubernetes context (needed for kubectl to access EKS cluster)
                     sh "kubectl config use-context ${KUBE_CONTEXT}"
-
-                    // Apply Kubernetes configuration file to update the deployment
                     sh """
                     kubectl set image deployment/your-deployment-name your-container=${DOCKER_TAG} -n ${KUBE_NAMESPACE}
                     kubectl rollout status deployment/your-deployment-name -n ${KUBE_NAMESPACE}
@@ -42,6 +41,7 @@ pipeline {
                 }
             }
         }
+    }
     }
 
     post {
