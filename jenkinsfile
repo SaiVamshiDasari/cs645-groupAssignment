@@ -31,11 +31,17 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    sh "kubectl config use-context ${KUBE_CONTEXT}"
-                    sh """
-                    kubectl set image deployment/your-deployment-name your-container=${DOCKER_TAG} -n ${KUBE_NAMESPACE}
-                    kubectl rollout status deployment/your-deployment-name -n ${KUBE_NAMESPACE}
-                    """
+                    // Export AWS token to be used by kubectl
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
+                        sh '''
+                        export TOKEN=$(aws eks get-token --region us-east-1 --cluster-name cs645-cluster | jq -r '.status.token')
+                        kubectl config set-credentials eks-user --token=$TOKEN
+                        kubectl config use-context ${KUBE_CONTEXT}
+
+                        kubectl set image deployment/your-deployment-name your-container=${DOCKER_TAG} -n ${KUBE_NAMESPACE}
+                        kubectl rollout status deployment/your-deployment-name -n ${KUBE_NAMESPACE}
+                        '''
+                    }
                 }
             }
         }
