@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                     // Export AWS token to be used by kubectl
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-cred']]) {
                         sh '''
                         export TOKEN=$(aws eks get-token --region us-east-1 --cluster-name cs645-cluster | jq -r '.status.token')
                         kubectl config set-credentials eks-user --token=$TOKEN
