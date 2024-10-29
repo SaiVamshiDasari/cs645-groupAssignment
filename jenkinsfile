@@ -31,15 +31,21 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Export AWS token to be used by kubectl
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-cred']]) {
                         sh '''
                         export TOKEN=$(aws eks get-token --region us-east-1 --cluster-name cs645-cluster | jq -r '.status.token')
                         kubectl config set-credentials eks-user --token=$TOKEN
                         kubectl config use-context ${KUBE_CONTEXT}
 
-                        kubectl set image deployment/your-deployment-name your-container=${DOCKER_TAG} -n ${KUBE_NAMESPACE}
-                        kubectl rollout status deployment/your-deployment-name -n ${KUBE_NAMESPACE}
+                        # Apply the initial deployment and service YAML files
+                        kubectl apply -f deployment.yaml
+                        kubectl apply -f service.yaml
+
+                        # Update the deployment to use the dynamically tagged image
+                        kubectl set image deployment/survey-deployment survey-container=${DOCKER_TAG} -n ${KUBE_NAMESPACE}
+
+                        # Rollout status to confirm deployment
+                        kubectl rollout status deployment/survey-deployment -n ${KUBE_NAMESPACE}
                         '''
                     }
                 }
